@@ -6,11 +6,14 @@ import logging
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# --- CONFIGURAÇÕES ---
+# --- CONFIGURAÇÕES DINÂMICAS ---
+# Descobre a pasta onde o script está, seja qual for o PC ou pasta
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_FILE = os.path.join(BASE_DIR, 'organizer.log')
+
 TRACK_DIR = os.path.expanduser("~/Downloads")
 TEMP_DIR = os.environ.get('TEMP')
-LOG_FILE = 'C:/Users/Rúben/Desktop/SmartFiles/organizer.log'
-CLEANUP_INTERVAL = 604800  # 7 dias em segundos (60 * 60 * 24 * 7)
+CLEANUP_INTERVAL = 604800  # 7 dias
 
 DEST_MAP = {
     ".pdf": "Documentos/PDFs",
@@ -49,19 +52,14 @@ logging.basicConfig(
 )
 
 def empty_trash():
-    """Limpa a Reciclagem silenciosamente via API do Windows"""
     try:
-        # Flags: 1=NoConfirmation, 2=NoProgressUI, 4=NoSound
         ctypes.windll.shell32.SHEmptyRecycleBinW(None, None, 1 | 2 | 4)
-        logging.info("SYSTEM: Reciclagem esvaziada (Manutenção Semanal).")
+        logging.info("SYSTEM: Reciclagem esvaziada.")
     except Exception as e:
         logging.error(f"SYSTEM ERROR (Trash): {e}")
 
 def cleanup_temp():
-    """Limpa a pasta temporária do Windows"""
-    if not TEMP_DIR or not os.path.exists(TEMP_DIR):
-        return
-    
+    if not TEMP_DIR or not os.path.exists(TEMP_DIR): return
     count = 0
     for item in os.listdir(TEMP_DIR):
         item_path = os.path.join(TEMP_DIR, item)
@@ -72,11 +70,8 @@ def cleanup_temp():
             elif os.path.is_directory(item_path):
                 shutil.rmtree(item_path)
                 count += 1
-        except Exception:
-            continue # Ignora ficheiros em uso (normal no Windows)
-            
-    if count > 0:
-        logging.info(f"SYSTEM: Pasta Temp limpa ({count} ficheiros removidos).")
+        except Exception: continue
+    if count > 0: logging.info(f"SYSTEM: Temp limpo ({count} itens).")
 
 class MoveHandler(FileSystemEventHandler):
     def on_created(self, event):
@@ -85,15 +80,11 @@ class MoveHandler(FileSystemEventHandler):
 
     def process_file(self, file_path):
         filename = os.path.basename(file_path)
-        # Proteção contra erros de leitura imediata
         if not filename: return 
         
-        try:
-            extension = os.path.splitext(filename)[1].lower()
-        except Exception:
-            return
+        try: extension = os.path.splitext(filename)[1].lower()
+        except Exception: return
 
-        # Ignorar temporários e ficheiros ocultos
         if extension in [".crdownload", ".part", ".tmp"] or filename.startswith("."):
             return
 
@@ -101,50 +92,56 @@ class MoveHandler(FileSystemEventHandler):
             dest_folder = os.path.join(TRACK_DIR, DEST_MAP[extension])
             os.makedirs(dest_folder, exist_ok=True)
             
-            # Delay crucial para downloads acabarem de escrever no disco
-            time.sleep(2)
+            time.sleep(1) # Pequena pausa para garantir acesso ao ficheiro
             
             final_path = os.path.join(dest_folder, filename)
-            
-            # Gestão de duplicados
             if os.path.exists(final_path):
                 name, ext = os.path.splitext(filename)
-                timestamp = int(time.time())
-                final_path = os.path.join(dest_folder, f"{name}_{timestamp}{ext}")
+                final_path = os.path.join(dest_folder, f"{name}_{int(time.time())}{ext}")
 
             try:
-                # Tenta mover com tratamento de erros de permissão
                 if os.path.exists(file_path): 
                     os.rename(file_path, final_path)
                     logging.info(f"MOVED: {filename} -> {DEST_MAP[extension]}")
             except Exception as e:
                 logging.error(f"MOVE ERROR: {filename} -> {e}")
 
+# --- NOVA FUNÇÃO PARA ARRUMAR AO INICIAR ---
+def organize_existing_files(handler):
+    logging.info("STARTUP: A verificar ficheiros já existentes...")
+    if not os.path.exists(TRACK_DIR): return
+    
+    for filename in os.listdir(TRACK_DIR):
+        file_path = os.path.join(TRACK_DIR, filename)
+        if os.path.isfile(file_path):
+            handler.process_file(file_path)
+
 if __name__ == "__main__":
-    # Executa a limpeza imediatamente ao iniciar o script
+    event_handler = MoveHandler()
+    
+    # 1. Limpeza de Sistema
     empty_trash()
     cleanup_temp()
+    
+    # 2. Arrumar ficheiros que já lá estavam (A CORREÇÃO QUE FALTAVA)
+    organize_existing_files(event_handler)
 
-    event_handler = MoveHandler()
+    # 3. Iniciar monitorização
     observer = Observer()
     observer.schedule(event_handler, TRACK_DIR, recursive=False)
     observer.start()
 
-    logging.info("SERVICE: Organizador iniciado.")
+    logging.info("SERVICE: Organizador iniciado e a monitorizar.")
     last_cleanup = time.time()
     
     try:
         while True:
-            # Verifica a cada minuto se já passou 1 semana
-            time.sleep(60) 
-            
+            time.sleep(60)
             if time.time() - last_cleanup > CLEANUP_INTERVAL:
                 empty_trash()
                 cleanup_temp()
                 last_cleanup = time.time()
-                
     except Exception as e:
-        logging.error(f"CRITICAL FAULT: {e}")
+        logging.error(f"CRITICAL: {e}")
         observer.stop()
-    
     observer.join()

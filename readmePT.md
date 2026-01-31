@@ -5,6 +5,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=flat-square)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 ## 🚀 O que faz?
 
@@ -21,68 +22,58 @@ Este script é um "mordomo digital" que corre silenciosamente em background:
         * 🗑️ Esvazia a **Reciclagem** (sem janelas de confirmação).
         * 🧹 Limpa ficheiros inúteis da pasta **%TEMP%** do Windows.
 
-3.  **100% Portátil:**
-    * Não requer configuração de caminhos. Ele sabe onde está e cria os logs na própria pasta.
+3.  **Zero Config:**
+    * Não requer instalação de Python. Funciona logo após o download.
 
 ---
 
-## 🛠️ Instalação Rápida
+## 📦 Instalação (Simples)
 
-### 1. Preparar o Ambiente
-Certifica-te que tens o **Python** instalado. Abre esta pasta no terminal (`cmd` ou `PowerShell`) e corre:
+### 1. Descarregar
+Vai à secção **Releases** deste repositório e descarrega o ficheiro ZIP mais recente (ex: `SmartFiles_v1.0.zip`).
+* Dentro vais encontrar o ficheiro `organizer.exe`.
+* Extrai para uma pasta onde o queiras guardar (ex: `Documentos/SmartFiles`).
 
-```powershell
-# Cria o ambiente virtual (recomendado)
-python -m venv venv
+### 2. Iniciar
+Basta clicar duas vezes no `organizer.exe`.
+* **Nota:** O programa corre em "modo fantasma" (background), por isso **não vai abrir nenhuma janela**.
+* Para confirmar que está a funcionar, verifica se foi criado um ficheiro `organizer.log` na mesma pasta.
 
-# Ativa o ambiente
-.\venv\Scripts\activate
+> ⚠️ **Aviso sobre Antivírus (Windows Defender):**
+> Como este programa é open-source e não possui um certificado digital pago da Microsoft, o Windows pode incorretamente marcar o ficheiro como suspeito ("Falso Positivo").
+> * Se o Windows bloquear a execução, clica em **"Mais informações"** -> **"Executar mesmo assim"**.
 
-# Instala a única dependência necessária
-pip install watchdog
-2. Iniciar (Modo Silencioso)
-Para ligar o script sem deixar janelas pretas abertas, usa o ficheiro run_smartfiles.bat incluído neste projeto.
+---
 
-Basta clicar duas vezes no ficheiro .bat.
-
-Nada vai aparecer no ecrã (é intencional).
-
-Verifica o ficheiro organizer.log para confirmar que iniciou: SERVICE: Organizador iniciado.
-
-3. Automatizar no Arranque
+## 🤖 Automatizar no Arranque
 Para que o SmartFiles inicie sempre que ligas o PC:
 
-Cria um Atalho do ficheiro run_smartfiles.bat.
+1.  Clica com o botão direito no `organizer.exe` e escolhe **Criar Atalho**.
+2.  Prime `Win + R` no teclado, escreve `shell:startup` e dá Enter.
+3.  Move o atalho que criaste para dentro dessa pasta que abriu.
 
-Prime Win + R no teclado, escreve shell:startup e dá Enter.
+---
 
-Move o atalho que criaste para dentro dessa pasta.
+## ⚙️ Para Programadores (Código Fonte)
+Se quiseres alterar as pastas de destino ou a lógica do script, precisas de usar a versão Python:
 
-⚙️ Configuração (Opcional)
-O script funciona "out-of-the-box", mas podes editar o ficheiro organizer.py para personalizar:
+1.  Clona o repositório.
+2.  Instala as dependências: `pip install watchdog`.
+3.  Edita o ficheiro `organizer.py`.
+4.  Executa com `python organizer.py`.
 
-DEST_MAP: Define para onde vai cada tipo de ficheiro.
+---
 
-Ex: ".pdf": "Documentos/PDFs"
+## 📝 Logs
+Toda a atividade fica registada no ficheiro `organizer.log` na mesma pasta do executável.
+* `MOVED`: Ficheiro organizado com sucesso.
+* `SYSTEM`: Limpeza de lixo executada.
 
-CLEANUP_INTERVAL: Frequência da limpeza da reciclagem em segundos (Default: 604800 = 7 dias).
+## 🛑 Como Parar
+Como o script corre em background, para o desligar:
+1.  Abre o **Gestor de Tarefas** (`Ctrl + Shift + Esc`).
+2.  Vai ao separador **Detalhes**.
+3.  Termina a tarefa **`organizer.exe`** (ou `pythonw.exe` se estiveres a usar o código fonte).
 
-📝 Logs & Debugging
-Toda a atividade fica registada no ficheiro organizer.log na mesma pasta do script.
-
-MOVED: Ficheiro organizado com sucesso.
-
-SYSTEM: Limpeza de lixo executada.
-
-ERROR: Alguma coisa correu mal (ex: ficheiro aberto noutro programa).
-
-🛑 Como Parar
-Como o script corre em background (modo stealth), para o desligar:
-
-Abre o Gestor de Tarefas (Ctrl + Shift + Esc).
-
-Vai ao separador Detalhes.
-
-Termina a tarefa pythonw.exe.
-
-Autor: Rúben
+---
+**Autor:** Rúben
