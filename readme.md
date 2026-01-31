@@ -5,9 +5,8 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=flat-square)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
-## 🚀 Key Features
+## 🚀 What does it do?
 
 This script acts as a "digital butler" running silently in the background:
 
@@ -22,58 +21,68 @@ This script acts as a "digital butler" running silently in the background:
         * 🗑️ Empties the **Recycle Bin** silently.
         * 🧹 Cleans junk files from the Windows **%TEMP%** folder.
 
-3.  **Zero Config:**
-    * No Python installation required. Works right out of the box.
+3.  **Zero Configuration:**
+    * Fully portable. It detects its own location and manages logs locally.
 
 ---
 
-## 📦 Installation (Easy Mode)
+## 🛠️ Quick Installation
 
-### 1. Download
-Go to the **Releases** section of this repository and download the latest ZIP file (e.g., `SmartFiles_v1.0.zip`).
-* Inside, you will find the `organizer.exe` file.
-* Extract it to a permanent folder (e.g., `Documents/SmartFiles`).
+### 1. Environment Setup
+Make sure **Python** is installed. Open this folder in your terminal (`cmd` or `PowerShell`) and run:
 
-### 2. Run
-Just double-click `organizer.exe`.
-* **Note:** The program runs in "stealth mode" (background), so **no window will appear**.
-* To confirm it is running, check if an `organizer.log` file was created in the same folder.
+```powershell
+# Create virtual environment (recommended)
+python -m venv venv
 
-> ⚠️ **Antivirus Warning (False Positive):**
-> Since this is an open-source tool without a paid digital certificate, Windows Defender might incorrectly flag it as suspicious.
-> * If Windows blocks execution, click **"More Info"** -> **"Run Anyway"**.
+# Activate environment
+.\venv\Scripts\activate
 
----
+# Install the required dependency
+pip install watchdog
+2. Running (Stealth Mode)
+To run the script without keeping a terminal window open, use the included run_smartfiles.bat file.
 
-## 🤖 Start on Boot
+Just double-click the .bat file.
+
+Nothing will appear on screen (this is intentional).
+
+Check organizer.log to confirm startup: SERVICE: Organizador iniciado.
+
+3. Start on Boot
 To make SmartFiles run automatically when you turn on your PC:
 
-1.  Right-click `organizer.exe` and select **Create Shortcut**.
-2.  Press `Win + R`, type `shell:startup`, and hit Enter.
-3.  Move the shortcut into the folder that opens.
+Create a Shortcut of the run_smartfiles.bat file.
 
----
+Press Win + R, type shell:startup and hit Enter.
 
-## ⚙️ For Developers (Source Code)
-If you want to modify destination folders or logic, use the Python version:
+Move the shortcut into that folder.
 
-1.  Clone the repo.
-2.  Install dependencies: `pip install watchdog`.
-3.  Edit `organizer.py`.
-4.  Run with `python organizer.py`.
+⚙️ Configuration (Optional)
+The script works out-of-the-box, but you can edit organizer.py to customize:
 
----
+DEST_MAP: Define where each file type goes.
 
-## 📝 Logs
-All activity is recorded in `organizer.log` inside the script folder.
-* `MOVED`: File successfully sorted.
-* `SYSTEM`: Junk cleanup executed.
+Ex: ".pdf": "Documents/PDFs"
 
-## 🛑 How to Stop
-Since the script runs in the background, to stop it:
-1.  Open **Task Manager** (`Ctrl + Shift + Esc`).
-2.  Go to the **Details** tab.
-3.  End the task **`organizer.exe`** (or `pythonw.exe` if running from source).
+CLEANUP_INTERVAL: How often to clean system junk in seconds (Default: 604800 = 7 days).
 
----
-**Author:** Rúben
+📝 Logs & Debugging
+All activity is recorded in organizer.log inside the script folder.
+
+MOVED: File successfully sorted.
+
+SYSTEM: Junk cleanup executed.
+
+ERROR: Something went wrong (e.g., file locked by another program).
+
+🛑 How to Stop
+Since the script runs in background (stealth mode), to stop it:
+
+Open Task Manager (Ctrl + Shift + Esc).
+
+Go to the Details tab.
+
+End the pythonw.exe task.
+
+Author: Rúben
